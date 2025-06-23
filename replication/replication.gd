@@ -1,10 +1,17 @@
 extends Node
 
-var entities = []
+const _entity = preload("res://entity.gd")
+const Entity = _entity.Entity
 
-var servers = []
+var entities: Array[Entity] = [] # list of entities
 
-var players = []
+var servers: Dictionary[int, WebSocketPeer] = {}
+
+var players: Dictionary[int, WebSocketPeer] = {}
+
+# entities will have id, players starting with p_
+
+const X_BOUNDARY = 500
 
 const PORT = 8080
 
@@ -26,34 +33,78 @@ func _on_web_socket_server_data_received(peer: WebSocketPeer, id: int, message: 
 		var msg: String = message
 		print(msg)
 		return
-	#if typeof(message) == Variant.Type.TYPE_PACKED_BYTE_ARRAY:
-		#var mess: PackedByteArray = message
-		#var x: Message = bytes_to_var_with_objects(mess)
-		#print(x.type)
-		#print(mess.get_string_from_ascii())
-
-
 
 func _on_web_socket_server_server_listen() -> void:
-	print("server started")
+	print("replication server started")
 
 
 func _on_web_socket_server_text_received(peer: WebSocketPeer, id: int, message: String) -> void:
-	#var x = JSON.parse_string(message)
-	##print(x)
-	#print(typeof(x))
-	#print(x.type)
 	var e: Message = SimpleJsonClassConverter.json_string_to_class(message)
 	print(typeof(e))
 	print(e.get_type())
 	match e.get_type(): 
 		Msg.SRV_HELLO:
-			servers.append(id)
+			if !servers.has(id):
+				servers[id] = peer
+			else:
+				peer.close(1000, "why u bullshittin")
 			
 		Msg.PLR_HELLO:
-			players.append(id)
-			# TODO: spawn player entity and assign it to them
+			players[id] = peer
+			# TODO: spawn player entity and assign it to the authority
+			var player_entity: Entity = Entity.new()
+			player_entity.id = "p_" + str(id)
+			player_entity.authority = servers.keys()[0] # only the id here
+			player_entity.x = 0
+			player_entity.y = 0
+			entities.append(player_entity)
+			print("hello from player " + str(id) + "created new entity")
+			print("sending entity to authoritative server")
+			servers[player_entity.authority].send_text(Util.msg2str(AuthorityChangeMessage.create(true, player_entity)))
+			players[id].send_text(Util.msg2str(EntityUpdateMessage.create(player_entity.id, player_entity)))
 			
 		Msg.PLR_MOVE:
 			if id in players:
 				# TODO: continue here
+				var entity = get_entity("p_"+str(id))
+				# send the move to the authoritative server
+				servers[entity.authority].send_text(message)
+				
+			else: # player tried to move before sending hello
+				print("player " + str(id) + "tried to move before saying hello")
+		
+		Msg.ENTITY_UPDATE:
+			print("entity update from server")
+			var ee: EntityUpdateMessage = e
+			var x = get_entity(ee.entity_id)
+			if (x.authority == id): # only update the entity if it comes from the correct server
+				x.x = ee.entity.x
+				x.y = ee.entity.y
+				# build in some sort of server authority change here based on coords
+				if (x.x > X_BOUNDARY && x.authority == servers.keys()[0]):
+					x.authority = servers.keys()[1]
+					servers[id].send_text(Util.msg2str(AuthorityChangeMessage.create(false, x)))
+					servers[servers.keys()[1]].send_text(Util.msg2str(AuthorityChangeMessage.create(true, x)))
+				else:
+					if x.authority != servers.keys()[0]:
+						x.authority = servers.keys()[0]
+						servers[id].send_text(Util.msg2str(AuthorityChangeMessage.create(false, x)))
+						servers[servers.keys()[0]].send_text(Util.msg2str(AuthorityChangeMessage.create(true, x)))
+				
+				# actually send the updated entities to players
+				update_players(x)
+				
+		Msg.AUTHORITY_CHANGE:
+			print("tis sum bullshit, why is authority change coming to the replication?")
+
+func update_players(entity: Entity):
+	for key in players.keys():
+		players[key].send_text(Util.msg2str(EntityUpdateMessage.create(entity.id, entity)))
+		
+
+func get_entity(id: String) -> Entity:
+	for entity in entities:
+		if entity.id == id:
+			return entity
+	return null
+	
