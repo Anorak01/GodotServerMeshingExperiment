@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://ckbdk80s0d3yq"]
+
+[ext_resource type="Script" uid="uid://wb67x5qvpg08" path="res://replication/replication.gd" id="1_kr2l7"]
+[ext_resource type="Script" uid="uid://im4rrmu6h26k" path="res://addons/nodewebsockets/websocket_server.gd" id="2_41ak5"]
+
+[node name="Replication" type="Node"]
+script = ExtResource("1_kr2l7")
+
+[node name="WebSocketServer" type="Node" parent="."]
+script = ExtResource("2_41ak5")
+start_on_ready = false
+protocols = PackedStringArray("proto")
+metadata/_custom_type_script = "uid://im4rrmu6h26k"
+
+[connection signal="client_connected" from="WebSocketServer" to="." method="_on_web_socket_server_client_connected"]
+[connection signal="client_disconnected" from="WebSocketServer" to="." method="_on_web_socket_server_client_disconnected"]
+[connection signal="data_received" from="WebSocketServer" to="." method="_on_web_socket_server_data_received"]
+[connection signal="server_listen" from="WebSocketServer" to="." method="_on_web_socket_server_server_listen"]
+[connection signal="text_received" from="WebSocketServer" to="." method="_on_web_socket_server_text_received"]

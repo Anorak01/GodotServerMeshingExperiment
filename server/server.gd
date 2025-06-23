@@ -1,0 +1,49 @@
+extends Node
+
+const PORT = 8080
+const IPADDR = "localhost"
+
+var connection_established = false
+var trying_connect = true
+
+func _ready() -> void:
+	$WebSocketClient.url_server = "ws://" + IPADDR + ":" + str(PORT)
+	var err = await $WebSocketClient.connect_to_server()
+	print("ERROR: " + str(err))
+
+func _process(delta: float) -> void:
+	#if connection_established:
+		#$WebSocketClient.send("hello".to_ascii_buffer())
+
+	if !connection_established and !trying_connect:
+		trying_connect = true
+		print("reconnecting")
+		var err = $WebSocketClient.connect_to_server()
+		print("ERROR: " + str(err))
+		$Timer.start(5)
+
+func _on_web_socket_client_connection_closed(was_clean_close: bool) -> void:
+	connection_established = false
+
+func _on_timer_timeout() -> void:
+	trying_connect = false
+
+func _on_web_socket_client_data_received(peer: WebSocketPeer, message: Variant, is_string: bool) -> void:
+	print("got data: " + str(message))
+
+func _on_web_socket_client_connection_established(peer: WebSocketPeer, protocol: String) -> void:
+	connection_established = true
+	
+	
+	
+	var x = Message.new().type(Msg.SRV_HELLO)
+	#var t = {
+	#	"type": "hello"
+	#}
+	#var j = JSON.stringify(t)
+	
+	#print(j)
+	
+	var e = SimpleJsonClassConverter.class_to_json_string(x)
+	print(e)
+	$WebSocketClient.send_text(e)
