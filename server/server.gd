@@ -55,25 +55,15 @@ func _on_web_socket_client_data_received(peer: WebSocketPeer, message: Variant, 
 func _physics_process(delta: float) -> void:
 	for input in input_queue:
 		var entity = get_entity(input.id)
-		entity.x += input.dir.x
-		entity.y += input.dir.y
+		entity.x += (input.dir.x * delta)
+		entity.y += (input.dir.y * delta)
 		# send entity update
 		$WebSocketClient.send_text(EntityUpdateMessage.create(entity.id, entity))
 	input_queue.clear()
 
 func _on_web_socket_client_connection_established(peer: WebSocketPeer, protocol: String) -> void:
 	connection_established = true
-	
-	
-	
 	var x = Message.new().type(Msg.SRV_HELLO)
-	#var t = {
-	#	"type": "hello"
-	#}
-	#var j = JSON.stringify(t)
-	
-	#print(j)
-	
 	var e = SimpleJsonClassConverter.class_to_json_string(x)
 	print(e)
 	$WebSocketClient.send_text(e)
