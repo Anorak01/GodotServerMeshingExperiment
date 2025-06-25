@@ -32,30 +32,17 @@ func _on_web_socket_client_connection_closed(was_clean_close: bool) -> void:
 func _on_timer_timeout() -> void:
 	trying_connect = false
 
-func _on_web_socket_client_data_received(peer: WebSocketPeer, message: Variant, is_string: bool) -> void:
-	print("got data: " + str(message))
-	var e: Message = SimpleJsonClassConverter.json_string_to_class(message)
-	
-	match e.get_type(): 
-		Msg.AUTHORITY_CHANGE:
-			var ee: AuthorityChangeMessage = e
-			if ee.add:
-				entities.append(ee.entity)
-			else:
-				entities.erase(get_entity(ee.entity.id))
-		
-		Msg.PLR_MOVE:
-			var ee: PlayerMoveMessage = e
-			input_queue.append(e)
-			
 
 func _physics_process(delta: float) -> void:
 	for input in input_queue:
+		print(input.id)
 		var entity = get_entity(input.id)
-		entity.x += (input.dir.x * delta)
-		entity.y += (input.dir.y * delta)
+		entity.x += (input.dir.x * delta * 100)
+		entity.y += (input.dir.y * delta * 100)
 		# send entity update
-		$WebSocketClient.send_text(EntityUpdateMessage.create(entity.id, entity))
+		var msg = Util.msg2str(EntityUpdateMessage.create(entity.id, entity))
+		print(msg)
+		$WebSocketClient.send_text(msg)
 	input_queue.clear()
 
 func _on_web_socket_client_connection_established(peer: WebSocketPeer, protocol: String) -> void:
@@ -79,11 +66,18 @@ func _on_web_socket_client_text_received(peer: WebSocketPeer, message: Variant) 
 	match e.get_type(): 
 		Msg.AUTHORITY_CHANGE:
 			var ee: AuthorityChangeMessage = e
+			print(ee.add)
 			if ee.add:
+				print(ee.entity)
+				print(ee.entity.id)
 				entities.append(ee.entity)
+				print("appending entity")
+				for i in entities:
+					print(i.id)
 			else:
 				entities.erase(get_entity(ee.entity.id))
 		
 		Msg.PLR_MOVE:
 			var ee: PlayerMoveMessage = e
+			print("moving player")
 			input_queue.append(e)

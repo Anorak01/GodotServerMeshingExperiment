@@ -8,6 +8,7 @@ script = ExtResource("1_vu05s")
 
 [node name="WebSocketClient" type="Node" parent="."]
 script = ExtResource("1_xyq8r")
+protocols = PackedStringArray("proto")
 metadata/_custom_type_script = "uid://d3r1hw7tg04do"
 
 [connection signal="connection_established" from="WebSocketClient" to="." method="_on_web_socket_client_connection_established"]

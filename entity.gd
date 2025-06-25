@@ -3,13 +3,13 @@ class_name Entity
 
 signal update_pos
 
-var authority: int
-var id: String
-var x: int:
+@export var authority: int
+@export var id: String
+@export var x: float:
 	set(val):
 		x = val
 		update_pos.emit()
-var y: int:
+@export var y: float:
 	set(val):
 		y = val
 		update_pos.emit()

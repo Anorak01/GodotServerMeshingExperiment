@@ -1,8 +1,8 @@
 extends Message
 class_name EntityUpdateMessage
 
-var entity_id: String
-var entity: Entity
+@export var entity_id: String
+@export var entity: Entity
 
 static func create(entity_id: String, entity: Entity) -> EntityUpdateMessage:
 	var message: EntityUpdateMessage = EntityUpdateMessage.new().type(Msg.ENTITY_UPDATE)

@@ -37,8 +37,8 @@ func _on_web_socket_server_server_listen() -> void:
 
 func _on_web_socket_server_text_received(peer: WebSocketPeer, id: int, message: String) -> void:
 	var e: Message = SimpleJsonClassConverter.json_string_to_class(message)
-	print(typeof(e))
-	print(e.get_type())
+	#print(typeof(e))
+	#print(e.get_type())
 	match e.get_type(): 
 		Msg.SRV_HELLO:
 			if !servers.has(id):
@@ -55,9 +55,13 @@ func _on_web_socket_server_text_received(peer: WebSocketPeer, id: int, message: 
 			player_entity.x = 0
 			player_entity.y = 0
 			entities.append(player_entity)
-			print("hello from player " + str(id) + "created new entity")
+			print("hello from player " + str(id) + ", created new entity")
 			print("sending entity to authoritative server")
-			servers[player_entity.authority].send_text(Util.msg2str(AuthorityChangeMessage.create(true, player_entity)))
+			var msg = AuthorityChangeMessage.create(true, player_entity)
+			#var str_msg = Util.msg2str(msg)
+			var str_msg = SimpleJsonClassConverter.class_to_json_string(msg)
+			print(str_msg)
+			servers[player_entity.authority].send_text(str_msg)
 			players[id].send_text(Util.msg2str(EntityUpdateMessage.create(player_entity.id, player_entity)))
 			
 		Msg.PLR_MOVE:
@@ -71,7 +75,7 @@ func _on_web_socket_server_text_received(peer: WebSocketPeer, id: int, message: 
 				print("player " + str(id) + "tried to move before saying hello")
 		
 		Msg.ENTITY_UPDATE:
-			print("entity update from server")
+			#print("entity update from server")
 			var ee: EntityUpdateMessage = e
 			var x = get_entity(ee.entity_id)
 			if (x.authority == id): # only update the entity if it comes from the correct server
@@ -105,3 +109,9 @@ func get_entity(id: String) -> Entity:
 			return entity
 	return null
 	
+func update_entity(entity: Entity) -> void:
+	for e in entities:
+		if e.id == entity.id:
+			e.authority = entity.authority
+			e.x = entity.x
+			e.y = entity.y
