@@ -11,5 +11,10 @@ script = ExtResource("1_xyq8r")
 protocols = PackedStringArray("proto")
 metadata/_custom_type_script = "uid://d3r1hw7tg04do"
 
+[node name="Line2D" type="Line2D" parent="."]
+modulate = Color(1, 0, 0, 1)
+points = PackedVector2Array(500, 0, 500, 800)
+width = 2.0
+
 [connection signal="connection_established" from="WebSocketClient" to="." method="_on_web_socket_client_connection_established"]
 [connection signal="text_received" from="WebSocketClient" to="." method="_on_web_socket_client_text_received"]

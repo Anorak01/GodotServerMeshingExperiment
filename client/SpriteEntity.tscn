@@ -9,4 +9,11 @@ script = ExtResource("1_5v7ak")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_mv1h8")
 
+[node name="Label" type="Label" parent="."]
+offset_left = -40.0
+offset_top = -66.0
+offset_right = 40.0
+offset_bottom = -43.0
+text = "Authority"
+
 [connection signal="update_pos" from="." to="." method="_on_update_pos"]

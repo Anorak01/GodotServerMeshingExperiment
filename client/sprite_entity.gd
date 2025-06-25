@@ -22,6 +22,7 @@ func _ready() -> void:
 func _on_update_pos() -> void:
 	self.position.x = self.x
 	self.position.y = self.y
+	$Label.text = str(self.authority)
 
 static func from_entity(entity: Entity) -> SpriteEntity:
 	var x = load("res://client/SpriteEntity.tscn")#SpriteEntity.new()

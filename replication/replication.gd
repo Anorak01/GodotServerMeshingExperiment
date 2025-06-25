@@ -24,7 +24,7 @@ func _on_web_socket_server_client_disconnected(peer: WebSocketPeer, id: int, was
 	print("client disconnected, ID: " + str(id))
 
 func _on_web_socket_server_data_received(peer: WebSocketPeer, id: int, message: Variant, is_string: bool) -> void:
-	print("got data, ID: " + str(id) + " message: " + str(message))
+	#print("got data, ID: " + str(id) + " message: " + str(message))
 	return
 	if is_string:
 		var msg: String = message
@@ -82,12 +82,15 @@ func _on_web_socket_server_text_received(peer: WebSocketPeer, id: int, message: 
 				x.x = ee.entity.x
 				x.y = ee.entity.y
 				# build in some sort of server authority change here based on coords
-				if (x.x > X_BOUNDARY && x.authority == servers.keys()[0]):
-					x.authority = servers.keys()[1]
-					servers[id].send_text(Util.msg2str(AuthorityChangeMessage.create(false, x)))
-					servers[servers.keys()[1]].send_text(Util.msg2str(AuthorityChangeMessage.create(true, x)))
+				if (x.x > X_BOUNDARY):
+					if x.authority == servers.keys()[0]:
+						print("changing autority to s1")
+						x.authority = servers.keys()[1]
+						servers[id].send_text(Util.msg2str(AuthorityChangeMessage.create(false, x)))
+						servers[servers.keys()[1]].send_text(Util.msg2str(AuthorityChangeMessage.create(true, x)))
 				else:
-					if x.authority != servers.keys()[0]:
+					if x.authority == servers.keys()[1]:
+						print("changing autority to s0")
 						x.authority = servers.keys()[0]
 						servers[id].send_text(Util.msg2str(AuthorityChangeMessage.create(false, x)))
 						servers[servers.keys()[0]].send_text(Util.msg2str(AuthorityChangeMessage.create(true, x)))
