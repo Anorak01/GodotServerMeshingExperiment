@@ -1,8 +1,5 @@
 extends Node
 
-const _entity = preload("res://entity.gd")
-const Entity = _entity.Entity
-
 var entities: Array[Entity] = [] # list of entities
 
 var servers: Dictionary[int, WebSocketPeer] = {}

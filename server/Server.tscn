@@ -20,4 +20,5 @@ autostart = true
 [connection signal="connection_closed" from="WebSocketClient" to="." method="_on_web_socket_client_connection_closed"]
 [connection signal="connection_established" from="WebSocketClient" to="." method="_on_web_socket_client_connection_established"]
 [connection signal="data_received" from="WebSocketClient" to="." method="_on_web_socket_client_data_received"]
+[connection signal="text_received" from="WebSocketClient" to="." method="_on_web_socket_client_text_received"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

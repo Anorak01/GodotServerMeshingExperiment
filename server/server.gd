@@ -6,9 +6,6 @@ const IPADDR = "localhost"
 var connection_established = false
 var trying_connect = true
 
-const _e = preload("res://entity.gd")
-const Entity = _e.Entity
-
 var entities: Array[Entity] = []
 
 var input_queue: Array[PlayerMoveMessage] = [] # array of player move messages to be processed next physics frame
@@ -73,3 +70,20 @@ func get_entity(id: String) -> Entity:
 		if entity.id == id:
 			return entity
 	return null
+
+
+func _on_web_socket_client_text_received(peer: WebSocketPeer, message: Variant) -> void:
+	print("got data: " + str(message))
+	var e: Message = SimpleJsonClassConverter.json_string_to_class(message)
+	
+	match e.get_type(): 
+		Msg.AUTHORITY_CHANGE:
+			var ee: AuthorityChangeMessage = e
+			if ee.add:
+				entities.append(ee.entity)
+			else:
+				entities.erase(get_entity(ee.entity.id))
+		
+		Msg.PLR_MOVE:
+			var ee: PlayerMoveMessage = e
+			input_queue.append(e)
