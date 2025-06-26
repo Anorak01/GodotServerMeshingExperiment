@@ -12,3 +12,12 @@ Replication server is the part that holds all the game state, its basically a db
 Game server connects to the Replication server and gets assigned entities to process, which it processes. 
 
 Client talks to the Replication server. If player input, Replication server relays the input to the Game server which has authority over the player.
+
+## Running
+```
+1. Clone the repo
+2. Start Replication: godot replication --headless
+3. Start two Game Servers: godot server --headless
+4. Start your clients: godot client (or open editor and run the Client scene)
+```
+To run the project, you need Godot Engine 4.4 installed.
